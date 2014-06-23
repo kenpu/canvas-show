@@ -1,0 +1,40 @@
+<html>
+	<head>
+		<style>
+		.outer {
+			position: fixed;
+			width: 100%;
+			height: 100%;
+			top: 0;
+			left: 0;
+			display: table;
+		}
+		.inner {
+			display: table-cell;
+			vertical-align: middle;
+			width:  100%;
+			height: 100%;
+			text-align: center;
+		}
+		div.canvas {
+			display: inline-block;
+			border: thin solid #aaa;
+		}
+		</style>
+	</head>
+	<body>
+		<p></p>
+		<div class="outer">
+			<div class="inner">
+				<div class="canvas">
+				<canvas width=800 height=600></canvas>
+				</div>
+			</div>
+		</div>
+
+		<script src="../lib/jquery.min.js"></script>
+		<script src="smooth.js"></script>
+		<script src="streams.js"></script>
+		<script src="ui.js"></script>
+	</body>
+</html>

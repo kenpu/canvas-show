@@ -1,0 +1,49 @@
+<html>
+    <head>
+        <style>
+        .outer {
+            position: fixed;
+            display: table;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+        .inner {
+            display: table-cell;
+            width: 100%;
+            height: 100%;
+            vertical-align: middle;
+            text-align: center;
+        }
+        .canvas-container {
+            display: inline-block;
+            border: thin solid black;
+        }
+        </style>
+    </head>
+    <body>
+        <div class="outer">
+            <div class="inner">
+                <div class="canvas-container">
+                    <canvas width="400" height="400"></canvas>
+                </div>
+            </div>
+        </div>
+        <script src="lib/jquery.min.js"></script>
+        <script src="lib/sprintf.min.js"></script>
+<script>
+"use strict";
+$(function() {
+    /* ----------------------------------------- */
+    var canvas = $('canvas');
+    var ctx = canvas[0].getContext('2d');
+    var points = [];
+    for(var i=0; i < 100; i++) {
+        
+    }
+    /* ----------------------------------------- */
+});
+</script>
+    </body>
+</html>
