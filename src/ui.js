@@ -1,9 +1,7 @@
 "use strict";
 
 $(function() {
-
 	var canvas = $('canvas');
-	var ctx = canvas[0].getContext('2d');
 
 	function point_of(e) {
 		var offset = canvas.offset();
@@ -23,10 +21,9 @@ $(function() {
 	}
 
 
-	function Draw(ctx) {
-		this.ctx = ctx;
+	function Draw(canvas) {
+		this.ctx = canvas[0].getContext('2d');
 		this.drawers = [];
-		this.smooth = false;
 		this.config = {
 			strokeStyle: '#000',
 			fillStyle: '#000',
@@ -34,29 +31,45 @@ $(function() {
 			lineJoin: 'round',
 			lineCap: 'butt',
 		};
+		this.T = {
+			translate: {
+				x: 0,
+				y: 0,
+			},
+			zoom: 1,
+			smooth: false,
+			sample_length: 0,
+			sample_interval: 0,
+		}
+		this.w = parseInt(canvas.attr('width'));
+		this.h = parseInt(canvas.attr('height'));
 		this.width = function() {
-			return 800;
+			return this.w;
 		}
 		this.height = function() {
-			return 600;
+			return this.h;
 		}
 	}
 	Draw.prototype.add = function(drawer) {
 		this.drawers.push(drawer);
 	}
 	Draw.prototype.refresh = function() {
+		this.ctx.save();
 		this.ctx.clearRect(0, 0, this.width(), this.height());
+
+		// perform translation
 		for(var k in this.config) {
 			this.ctx[k] = this.config[k];
 		}
 		this.drawers.forEach(function(drawer) {
 			drawer.refresh(this);
 		});
+		this.ctx.restore();
 	}
 
 	Draw.prototype.curve = function(buf) {
 		var c = this.ctx;
-		var smooth = this.smooth;
+		var smooth = this.T.smooth;
 		c.beginPath();
 		buf.forEach(function(p, i) {
 			if(i == 0) {
@@ -75,13 +88,10 @@ $(function() {
 
 
 	// streams and receivers
-	var draw = new Draw(ctx);
-	var world = new World(draw);
+	var draw = new Draw(canvas);
+	var world = window.world = new World(draw);
 	var pen_body = window.pen_body = new PenBody(draw, world);
-	var pen_tip = window.pen_tip = new PenTip(draw, pen_body, {
-		min_len: 0,
-		min_t : 0,
-	});
+	var pen_tip = window.pen_tip = new PenTip(draw, pen_body);
 
 	// reactive 
 	function cancel(e) {
@@ -114,5 +124,31 @@ $(function() {
 	.bind('touchend', function(e) {
 		pen_tip.onUp();
 	});
+
+	$("#panLeft").click(function() {
+		draw.T.translate.x -= 10;
+		draw.refresh();
+	});
+	$("#panRight").click(function() {
+		draw.T.translate.x += 10;
+		draw.refresh();
+	});
+	$("#panUp").click(function() {
+		draw.T.translate.y += 10;
+		draw.refresh();
+	});
+	$("#panDown").click(function() {
+		draw.T.translate.y -= 10;
+		draw.refresh();
+	});
+	$("#zoomIn").click(function() {
+		draw.T.zoom *= 1.2;
+		draw.refresh();
+	});
+	$("#zoomOut").click(function() {
+		draw.T.zoom *= 1 / 1.2;
+		draw.refresh();
+	});
+
 
 });

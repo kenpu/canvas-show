@@ -7,14 +7,14 @@ function point_distance(p1, p2) {
 
 
 // Streams
-function PenTip(draw, downstream, o) {
-	this.draw = draw;
+function PenTip(draw, downstream) {
+	this.draw       = draw;
 	this.downstream = downstream;
-	this.min_len = o.min_len;
-	this.min_t   = o.min_t;
-	this.cum_len = 0;
-	this.last_t = 0;
-	this.buf = [];
+	this.min_len    = draw.T.sample_length;
+	this.min_t      = draw.T.sample_interval;
+	this.cum_len    = 0;
+	this.last_t     = 0;
+	this.buf        = [];
 
 	draw.add(this);
 }
@@ -116,7 +116,7 @@ PenBody.prototype.onEnd = function() {
 }
 PenBody.prototype.onSample = function(point) {
 	this.buf.push(point);
-	if(this.draw.smooth)
+	if(this.draw.T.smooth)
 		smoothen(this.buf, Math.max(0,this.buf.length-4));
 }
 
@@ -126,17 +126,53 @@ PenBody.prototype.refresh = function() {
 
 
 /* =============================================== */
-function World(draw) {
+function World(draw, T) {
 	this.draw = draw;
 	this.curves = [];
 	draw.add(this);
 }
+World.prototype.to_world = function(p) {
+	var w = this.draw.width(),
+		h = this.draw.height(),
+		T = this.draw.T;
+
+	// move coord to the center
+	p.x -= w/2;
+	p.y -= h/2;
+	// rescale p by zoom factor
+	p.x /= T.zoom;
+	p.y /= T.zoom;
+	// move coord back to the corner
+	p.x += w/2;
+	p.y += h/2;
+	// apply translation
+	p.x = (p.x + T.translate.x);
+	p.y = (p.y + T.translate.y);
+}
 World.prototype.onCurve = function(buf) {
+	var world = this;
+	buf.forEach(function(p) {
+		world.to_world(p);
+	});
+
 	this.curves.push(buf);
 }
 World.prototype.refresh = function() {
 	var draw = this.draw;
+	var ctx = this.draw.ctx;
+	ctx.save();
+	
+	var w = draw.width(),
+		h = draw.height(),
+		T = draw.T;
+
+	ctx.translate(w/2, h/2);
+	ctx.scale(T.zoom, T.zoom);
+	ctx.translate(-w/2, -h/2);
+	ctx.translate(-T.translate.x, -T.translate.y);
+
 	this.curves.forEach(function(c) {
 		draw.curve(c);
 	});
+	ctx.restore();
 }
